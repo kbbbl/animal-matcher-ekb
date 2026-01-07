@@ -72,7 +72,7 @@ class Animal(models.Model):
     other_pet_friendly = models.IntegerField(
         "Отношение к другим животным",
         default=5,
-        help_text="От 1 до 10"
+        help_text="1 (не терпит других животных) - 10 (отлично ладит)"
     )
     activity_level = models.IntegerField(
         "Уровень активности",
@@ -143,3 +143,17 @@ class AdoptionApplication(models.Model):
     def __str__(self):
         animal_name = self.animal.name or "безымянному"
         return f"Заявка на {animal_name} от {self.full_name}"
+
+
+    class AdoptionApplication(models.Model):
+        animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
+        applicant_name = models.CharField(max_length=100)
+        applicant_phone = models.CharField(max_length=20)
+        applicant_email = models.EmailField()
+        message = models.TextField(blank=True, verbose_name="Сообщение")  # ← ДОБАВЬТЕ ЭТО
+        compatibility_score = models.IntegerField(default=0)
+        status = models.CharField(max_length=20, default='new')
+        created_at = models.DateTimeField(auto_now_add=True)
+
+        def __str__(self):
+            return f'Заявка на {self.animal.name} от {self.applicant_name}'
