@@ -2,8 +2,6 @@ from django.db import models
 
 
 class Shelter(models.Model):
-    """Модель приюта."""
-
     name = models.CharField(
         "Название приюта",
         max_length=200
@@ -19,8 +17,6 @@ class Shelter(models.Model):
 
 
 class Animal(models.Model):
-    """Модель животного."""
-
     SPECIES_CHOICES = [
         ('cat', 'Кошка'),
         ('dog', 'Собака'),
@@ -35,7 +31,7 @@ class Animal(models.Model):
     name = models.CharField(
         "Кличка",
         max_length=100,
-        blank=True,  # Может быть пустым
+        blank=True,
         help_text="Если клички нет - оставьте пустым"
     )
     shelter = models.ForeignKey(
@@ -51,7 +47,7 @@ class Animal(models.Model):
     breed = models.CharField(
         "Порода",
         max_length=100,
-        blank=True,  # Может быть пустым
+        blank=True,
         help_text="Не обязательно"
     )
     age = models.IntegerField(
@@ -63,7 +59,6 @@ class Animal(models.Model):
         blank=True
     )
 
-    # Параметры для алгоритма совместимости
     child_friendly = models.IntegerField(
         "Дружелюбие к детям",
         default=5,
@@ -101,8 +96,6 @@ class Animal(models.Model):
 
 
 class AdoptionApplication(models.Model):
-    """Заявка на усыновление."""
-
     STATUS_CHOICES = [
         ('pending', 'На рассмотрении'),
         ('approved', 'Одобрена'),
@@ -143,17 +136,3 @@ class AdoptionApplication(models.Model):
     def __str__(self):
         animal_name = self.animal.name or "безымянному"
         return f"Заявка на {animal_name} от {self.full_name}"
-
-
-    class AdoptionApplication(models.Model):
-        animal = models.ForeignKey(Animal, on_delete=models.CASCADE)
-        applicant_name = models.CharField(max_length=100)
-        applicant_phone = models.CharField(max_length=20)
-        applicant_email = models.EmailField()
-        message = models.TextField(blank=True, verbose_name="Сообщение")  # ← ДОБАВЬТЕ ЭТО
-        compatibility_score = models.IntegerField(default=0)
-        status = models.CharField(max_length=20, default='new')
-        created_at = models.DateTimeField(auto_now_add=True)
-
-        def __str__(self):
-            return f'Заявка на {self.animal.name} от {self.applicant_name}'
