@@ -1,4 +1,3 @@
-# animals/views.py
 from django.shortcuts import render
 from django.views.generic import ListView, DetailView
 import pandas as pd
@@ -8,14 +7,12 @@ from .forms import AnimalSearchForm
 
 
 class AnimalListView(ListView):
-    # Отображение списка животных с фильтрацией и сортировкой
     model = Animal
     template_name = 'animals/animal_list.html'
     context_object_name = 'animals'
     paginate_by = 6
 
     def get_queryset(self):
-        # Фильтрация доступных животных по параметрам
         queryset = Animal.objects.filter(is_available=True)
 
         species = self.request.GET.get('species')
@@ -33,14 +30,12 @@ class AnimalListView(ListView):
         return queryset
 
     def get_context_data(self, **kwargs):
-        # Добавление формы поиска и статистики в контекст
         context = super().get_context_data(**kwargs)
         context['search_form'] = AnimalSearchForm(self.request.GET)
         context['stats'] = self._calculate_statistics()
         return context
 
     def _calculate_statistics(self):
-        # Расчет статистики с использованием Pandas
         animals = self.get_queryset().values()
         if not animals:
             return {}
@@ -58,25 +53,22 @@ class AnimalListView(ListView):
 
 
 class AnimalDetailView(DetailView):
-    # Детальная страница животного с графиком совместимости
     model = Animal
     template_name = 'animals/animal_detail.html'
     context_object_name = 'animal'
 
     def get_context_data(self, **kwargs):
-        # Добавление графика Plotly в контекст
         context = super().get_context_data(**kwargs)
         context['compatibility_chart'] = self._create_compatibility_chart()
         return context
 
     def _create_compatibility_chart(self):
-        # Создание интерактивного графика Plotly
         animal = self.object
 
         categories = ['Дети', 'Животные', 'Активность', 'Размер']
         values = [
             animal.child_friendly,
-            animal.pet_friendly,
+            animal.other_pet_friendly,
             animal.activity_level,
             5 if animal.size_category == 'small' else
             7 if animal.size_category == 'medium' else 9
@@ -102,7 +94,6 @@ class AnimalDetailView(DetailView):
 
 
 def shelter_statistics(request):
-    # Статистика приютов с использованием Pandas и Plotly
     shelters = Shelter.objects.all()
     data = []
 

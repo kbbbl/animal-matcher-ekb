@@ -1,229 +1,210 @@
-﻿<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Animal Matcher - Каталог животных</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f8f9fa;
-        }
-        .animal-card {
-            transition: transform 0.2s;
-            height: 100%;
-        }
-        .animal-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-        }
-        .filter-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-        }
-        .stat-badge {
-            font-size: 0.9em;
-            margin-right: 5px;
-        }
-    </style>
-</head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary mb-4">
-        <div class="container">
-            <a class="navbar-brand" href="/">🐾 Animal Matcher EKB</a>
+﻿{% extends 'base.html' %}
+
+{% block title %}Animal Matcher - Каталог животных{% endblock %}
+
+{% block extra_css %}
+<style>
+    .animal-card {
+        transition: transform 0.2s;
+        height: 100%;
+    }
+    .animal-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .filter-card {
+        background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+        color: white;
+        border: none;
+    }
+    .stat-badge {
+        font-size: 0.9em;
+        margin-right: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="display-5">Найдите своего идеального питомца</h1>
+            <p class="lead">Подбор животных из приютов Екатеринбурга с учетом совместимости</p>
         </div>
-    </nav>
-    
-    <div class="container">
-        <!-- Заголовок -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <h1 class="display-5">Найдите своего идеального питомца</h1>
-                <p class="lead">Подбор животных из приютов Екатеринбурга с учетом совместимости</p>
+    </div>
+
+    <div class="card filter-card mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3"><i class="bi bi-funnel"></i> Настройте поиск</h5>
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label text-white">Вид животного</label>
+                    <select name="species" class="form-select">
+                        <option value="">Все виды</option>
+                        <option value="cat" {% if request.GET.species == 'cat' %}selected{% endif %}>Кошки</option>
+                        <option value="dog" {% if request.GET.species == 'dog' %}selected{% endif %}>Собаки</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-white">Размер</label>
+                    <select name="size" class="form-select">
+                        <option value="">Любой размер</option>
+                        <option value="small" {% if request.GET.size == 'small' %}selected{% endif %}>Маленький</option>
+                        <option value="medium" {% if request.GET.size == 'medium' %}selected{% endif %}>Средний</option>
+                        <option value="large" {% if request.GET.size == 'large' %}selected{% endif %}>Крупный</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-white">Сортировка</label>
+                    <select name="sort_by" class="form-select">
+                        <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>По имени</option>
+                        <option value="age" {% if request.GET.sort_by == 'age' %}selected{% endif %}>По возрасту</option>
+                        <option value="child_friendly" {% if request.GET.sort_by == 'child_friendly' %}selected{% endif %}>По дружелюбию</option>
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label text-white">Поиск по кличке</label>
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Введите кличку..."
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+
+                <div class="col-12 mt-3">
+                    <button type="submit" class="btn btn-light me-2">
+                        <i class="bi bi-check-circle"></i> Применить фильтры
+                    </button>
+                    <a href="{% url 'animal_list' %}" class="btn btn-outline-light">
+                        <i class="bi bi-x-circle"></i> Сбросить фильтры
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if stats %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика (работает Pandas!)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ stats.total_count }}</h3>
+                                <p class="text-muted mb-0">Всего животных</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ stats.cats_count }}</h3>
+                                <p class="text-muted mb-0">Кошек</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ stats.dogs_count }}</h3>
+                                <p class="text-muted mb-0">Собак</p>
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ stats.avg_child_friendly }}/10</h3>
+                                <p class="text-muted mb-0">Ср. дружелюбие</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- ФОРМА ФИЛЬТРАЦИИ -->
-        <div class="card filter-card mb-4">
-            <div class="card-body">
-                <h5 class="card-title mb-3">🔍 Настройте поиск</h5>
-                <form method="get" class="row g-3">
-                    <div class="col-md-3">
-                        <label class="form-label text-white">Вид животного</label>
-                        <select name="species" class="form-select">
-                            <option value="">Все виды</option>
-                            <option value="cat" {% if request.GET.species == 'cat' %}selected{% endif %}>Кошки</option>
-                            <option value="dog" {% if request.GET.species == 'dog' %}selected{% endif %}>Собаки</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <label class="form-label text-white">Размер</label>
-                        <select name="size" class="form-select">
-                            <option value="">Любой размер</option>
-                            <option value="small" {% if request.GET.size == 'small' %}selected{% endif %}>Маленький</option>
-                            <option value="medium" {% if request.GET.size == 'medium' %}selected{% endif %}>Средний</option>
-                            <option value="large" {% if request.GET.size == 'large' %}selected{% endif %}>Крупный</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <label class="form-label text-white">Сортировка</label>
-                        <select name="sort_by" class="form-select">
-                            <option value="name" {% if request.GET.sort_by == 'name' %}selected{% endif %}>По имени</option>
-                            <option value="age" {% if request.GET.sort_by == 'age' %}selected{% endif %}>По возрасту</option>
-                            <option value="child_friendly" {% if request.GET.sort_by == 'child_friendly' %}selected{% endif %}>По дружелюбию</option>
-                        </select>
-                    </div>
-                    
-                    <div class="col-md-3">
-                        <label class="form-label text-white">Поиск по кличке</label>
-                        <input type="text" name="search" class="form-control" 
-                               placeholder="Введите кличку..." 
-                               value="{{ request.GET.search|default:'' }}">
-                    </div>
-                    
-                    <div class="col-12 mt-3">
-                        <button type="submit" class="btn btn-light me-2">
-                            <i class="bi bi-funnel"></i> Применить фильтры
-                        </button>
-                        <a href="/" class="btn btn-outline-light">Сбросить фильтры</a>
-                    </div>
-                </form>
-            </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12 mb-3">
+            <h3><i class="bi bi-heart"></i> Животные, ищущие дом <span class="badge bg-secondary">{{ animals|length }}</span></h3>
         </div>
-        
-        <!-- СТАТИСТИКА PANDAS -->
-        {% if stats %}
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header bg-info text-white">
-                        <h5 class="mb-0">📊 Статистика (работает Pandas!)</h5>
+
+        {% if animals %}
+            {% for animal in animals %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card animal-card h-100">
+                    {% if animal.photo %}
+                    <img src="{{ animal.photo.url }}" class="card-img-top"
+                         alt="{{ animal.name }}" style="height: 200px; object-fit: cover;">
+                    {% else %}
+                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                         style="height: 200px;">
+                        <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
                     </div>
+                    {% endif %}
+
                     <div class="card-body">
-                        <div class="row text-center">
-                            <div class="col-md-3">
-                                <h3>{{ stats.total_count }}</h3>
-                                <p class="text-muted">Всего животных</p>
-                            </div>
-                            <div class="col-md-3">
-                                <h3>{{ stats.cats_count }}</h3>
-                                <p class="text-muted">Кошек</p>
-                            </div>
-                            <div class="col-md-3">
-                                <h3>{{ stats.dogs_count }}</h3>
-                                <p class="text-muted">Собак</p>
-                            </div>
-                            <div class="col-md-3">
-                                <h3>{{ stats.avg_child_friendly }}/10</h3>
-                                <p class="text-muted">Ср. дружелюбие</p>
-                            </div>
+                        <h5 class="card-title">{{ animal.name|default:"Безымянный" }}</h5>
+
+                        <div class="mb-2">
+                            <span class="badge bg-primary stat-badge">
+                                {{ animal.get_species_display }}
+                            </span>
+                            <span class="badge bg-secondary stat-badge">
+                                {{ animal.get_size_category_display }}
+                            </span>
+                            <span class="badge bg-success stat-badge">{{ animal.age }} лет</span>
+                        </div>
+
+                        <ul class="list-unstyled small mb-3">
+                            <li><i class="bi bi-house"></i> Приют: {{ animal.shelter.name }}</li>
+                            <li><i class="bi bi-emoji-smile"></i> Дружелюбие к детям: {{ animal.child_friendly }}/10</li>
+                            <li><i class="bi bi-lightning"></i> Активность: {{ animal.activity_level }}/10</li>
+                        </ul>
+
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'animal_detail' animal.pk %}" class="btn btn-primary">
+                                <i class="bi bi-eye"></i> Подробнее
+                            </a>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-        {% endif %}
-        
-        <!-- КАРТОЧКИ ЖИВОТНЫХ -->
-        <div class="row">
-            <div class="col-12 mb-3">
-                <h3>Животные, ищущие дом <span class="badge bg-secondary">{{ animals|length }}</span></h3>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="alert alert-warning">
+                    <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Животные не найдены</h4>
+                    <p>Попробуйте изменить параметры фильтрации.</p>
+                </div>
             </div>
-            
-            {% if animals %}
-                {% for animal in animals %}
-                <div class="col-lg-4 col-md-6 mb-4">
-                    <div class="card animal-card h-100">
-                        {% if animal.photos %}
-                        <img src="{{ animal.photos.url }}" class="card-img-top" 
-                             alt="{{ animal.name }}" style="height: 200px; object-fit: cover;">
-                        {% else %}
-                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" 
-                             style="height: 200px;">
-                            <span class="text-muted">Фото отсутствует</span>
-                        </div>
-                        {% endif %}
-                        
-                        <div class="card-body">
-                            <h5 class="card-title">{{ animal.name }}</h5>
-                            
-                            <div class="mb-2">
-                                <span class="badge bg-primary stat-badge">{{ animal.get_species_display }}</span>
-                                <span class="badge bg-secondary stat-badge">{{ animal.get_size_category_display }}</span>
-                                <span class="badge bg-success stat-badge">{{ animal.age }} лет</span>
-                            </div>
-                            
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    <i class="bi bi-house"></i> Приют: {{ animal.shelter.name }}<br>
-                                    <i class="bi bi-heart"></i> Дружелюбие к детям: {{ animal.child_friendly }}/10<br>
-                                    <i class="bi bi-activity"></i> Активность: {{ animal.activity_level }}/10
-                                </small>
-                            </p>
-                            
-                            <div class="d-grid gap-2">
-                                <a href="{% url 'animal_detail' animal.pk %}" class="btn btn-primary">
-                                    <i class="bi bi-eye"></i> Подробнее
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-            {% else %}
-                <div class="col-12">
-                    <div class="alert alert-warning">
-                        <h4 class="alert-heading">Животные не найдены</h4>
-                        <p>Попробуйте изменить параметры фильтрации или убедитесь что в базе есть животные.</p>
-                    </div>
-                </div>
-            {% endif %}
-        </div>
-        
-        <!-- ПАГИНАЦИЯ -->
-        {% if is_paginated %}
-        <nav aria-label="Page navigation" class="mt-4">
-            <ul class="pagination justify-content-center">
-                {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        Назад
-                    </a>
-                </li>
-                {% endif %}
-                
-                <li class="page-item active">
-                    <span class="page-link">
-                        Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
-                    </span>
-                </li>
-                
-                {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
-                        Вперед
-                    </a>
-                </li>
-                {% endif %}
-            </ul>
-        </nav>
         {% endif %}
     </div>
-    
-    <footer class="bg-dark text-white py-4 mt-5">
-        <div class="container text-center">
-            <p>Animal Matcher EKB &copy; 2024 - Сервис подбора животных из приютов Екатеринбурга</p>
-            <p class="text-muted">Используются технологии: Django, Pandas, Plotly, Bootstrap</p>
-        </div>
-    </footer>
-    
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
-</body>
-</html>
+
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    <i class="bi bi-arrow-left"></i> Назад
+                </a>
+            </li>
+            {% endif %}
+
+            <li class="page-item active">
+                <span class="page-link">
+                    Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+                </span>
+            </li>
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% for key,value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    Вперед <i class="bi bi-arrow-right"></i>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% endblock %}
