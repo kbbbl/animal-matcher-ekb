@@ -82,7 +82,9 @@
                             <p class="card-text">
                                 <strong>Животных доступно:</strong>
                                 <span class="badge bg-warning">
-                                    {{ shelter.available_animals_count }}
+                                    {% with shelter.animal_set.all as animals %}
+                                        {{ animals|length }}
+                                    {% endwith %}
                                 </span>
                             </p>
                         </div>
