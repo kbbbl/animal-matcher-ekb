@@ -1,9 +1,10 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
+from django.contrib import messages
 import pandas as pd
 import plotly.graph_objects as go
 from .models import Animal, Shelter
-from .forms import AnimalSearchForm
+from .forms import AnimalSearchForm, AdoptionApplicationForm
 
 
 class AnimalListView(ListView):
@@ -131,3 +132,26 @@ def shelter_statistics(request):
         'chart_html': chart_html,
         'stats_data': data
     })
+
+
+def submit_adoption_application(request, animal_id):
+    animal = get_object_or_404(Animal, id=animal_id)
+
+    if request.method == 'POST':
+        form = AdoptionApplicationForm(request.POST)
+        if form.is_valid():
+            application = form.save(commit=False)
+            application.animal = animal
+            application.save()
+
+            messages.success(request, 'Заявка успешно отправлена! Мы свяжемся с вами.')
+            return redirect('animal_detail', pk=animal_id)
+    else:
+        form = AdoptionApplicationForm()
+
+    context = {
+        'animal': animal,
+        'application_form': form,
+        'compatibility_chart': AnimalDetailView()._create_compatibility_chart(animal)
+    }
+    return render(request, 'animals/animal_detail.html', context)
