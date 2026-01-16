@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.views.generic import ListView, DetailView
 from django.contrib import messages
+from django.contrib.auth import login, authenticate
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import AuthenticationForm
 import pandas as pd
 import plotly.graph_objects as go
-from .models import Animal, Shelter
-from .forms import AnimalSearchForm, AdoptionApplicationForm
+from .models import Animal, Shelter, UserProfile, AdoptionApplication
+from .forms import AnimalSearchForm, AdoptionApplicationForm, UserRegistrationForm, UserProfileForm
 
 
 class AnimalListView(ListView):
@@ -155,3 +158,194 @@ def submit_adoption_application(request, animal_id):
         'compatibility_chart': AnimalDetailView()._create_compatibility_chart(animal)
     }
     return render(request, 'animals/animal_detail.html', context)
+
+
+def register(request):
+    if request.method == 'POST':
+        user_form = UserRegistrationForm(request.POST)
+        if user_form.is_valid():
+            user = user_form.save()
+            login(request, user)
+            messages.success(
+                request,
+                'Регистрация успешна! Заполните анкету.'
+            )
+            return redirect('animal_list')
+    else:
+        user_form = UserRegistrationForm()
+
+    return render(
+        request,
+        'animals/register.html',
+        {'user_form': user_form}
+    )
+
+
+def user_login(request):
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(
+                username=username,
+                password=password
+            )
+            if user is not None:
+                login(request, user)
+                messages.success(
+                    request,
+                    f'Добро пожаловать, {username}!'
+                )
+                return redirect('animal_list')
+    else:
+        form = AuthenticationForm()
+
+    return render(
+        request,
+        'animals/login.html',
+        {'form': form}
+    )
+
+
+@login_required
+def edit_profile(request):
+    profile, created = UserProfile.objects.get_or_create(
+        user=request.user
+    )
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, instance=profile)
+        if form.is_valid():
+            form.save()
+            messages.success(
+                request,
+                'Профиль успешно обновлен!'
+            )
+            return redirect('animal_list')
+    else:
+        form = UserProfileForm(instance=profile)
+
+    return render(
+        request,
+        'animals/edit_profile.html',
+        {'form': form}
+    )
+
+
+@login_required
+def personal_recommendations(request):
+    try:
+        profile = request.user.profile
+    except UserProfile.DoesNotExist:
+        messages.warning(
+            request,
+            'Заполните анкету для получения рекомендаций'
+        )
+        return redirect('edit_profile')
+
+    animals = Animal.objects.filter(is_available=True)
+    recommendations = []
+
+    for animal in animals:
+        compatibility = profile.calculate_compatibility_with_animal(
+            animal
+        )
+        recommendations.append({
+            'animal': animal,
+            'compatibility': compatibility
+        })
+
+    recommendations.sort(
+        key=lambda x: x['compatibility'],
+        reverse=True
+    )
+
+    df = pd.DataFrame([
+        {
+            'name': rec['animal'].name or "Безымянный",
+            'species': rec['animal'].species,
+            'compatibility': rec['compatibility'],
+            'shelter': rec['animal'].shelter.name
+        }
+        for rec in recommendations
+    ])
+
+    stats = {}
+    chart_html = None
+
+    if not df.empty:
+        stats = {
+            'total': len(df),
+            'avg_compatibility': round(
+                df['compatibility'].mean(),
+                1
+            ),
+            'max_compatibility': df['compatibility'].max(),
+            'min_compatibility': df['compatibility'].min(),
+            'cats_count': len(df[df['species'] == 'cat']),
+            'dogs_count': len(df[df['species'] == 'dog']),
+        }
+
+        if len(df) > 0:
+            fig = go.Figure(data=[
+                go.Bar(
+                    x=df['name'][:10],
+                    y=df['compatibility'][:10],
+                    marker_color='rgb(55, 83, 109)'
+                )
+            ])
+            fig.update_layout(
+                title='Топ-10 рекомендаций по совместимости',
+                xaxis_title='Животные',
+                yaxis_title='Совместимость (%)',
+                showlegend=False
+            )
+            chart_html = fig.to_html(
+                full_html=False,
+                include_plotlyjs='cdn'
+            )
+
+    return render(
+        request,
+        'animals/personal_recommendations.html',
+        {
+            'recommendations': recommendations[:12],
+            'stats': stats,
+            'profile': profile,
+            'chart_html': chart_html
+        }
+    )
+
+
+@login_required
+def my_applications(request):
+    applications = AdoptionApplication.objects.filter(
+        email=request.user.email
+    ).order_by('-created_at')
+
+    if applications.exists():
+        df = pd.DataFrame(
+            list(applications.values(
+                'status',
+                'compatibility_score'
+            ))
+        )
+        status_counts = df['status'].value_counts().to_dict()
+        avg_compatibility = round(
+            df['compatibility_score'].mean(),
+            1
+        )
+    else:
+        status_counts = {}
+        avg_compatibility = 0
+
+    return render(
+        request,
+        'animals/my_applications.html',
+        {
+            'applications': applications,
+            'status_counts': status_counts,
+            'avg_compatibility': avg_compatibility
+        }
+    )
