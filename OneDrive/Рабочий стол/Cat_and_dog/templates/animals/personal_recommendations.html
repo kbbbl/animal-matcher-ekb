@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% block title %}Персональные рекомендации{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-stars"></i> Персональные рекомендации</h2>
+        <p class="lead">Животные, наиболее подходящие вам по совместимости</p>
+    </div>
+</div>
+
+{% if stats.total > 0 %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика рекомендаций</h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-2 mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ stats.total }}</h3>
+                            <p class="text-muted">Всего</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ stats.avg_compatibility }}%</h3>
+                            <p class="text-muted">Средняя совместимость</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ stats.cats_count }}</h3>
+                            <p class="text-muted">Кошек</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ stats.dogs_count }}</h3>
+                            <p class="text-muted">Собак</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ stats.max_compatibility }}%</h3>
+                            <p class="text-muted">Максимум</p>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <div class="stat-box">
+                            <h3 class="text-primary">{{ stats.min_compatibility }}%</h3>
+                            <p class="text-muted">Минимум</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if chart_html %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> График совместимости</h5>
+            </div>
+            <div class="card-body">
+                {{ chart_html|safe }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<div class="row">
+    {% for rec in recommendations %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card animal-card shadow h-100">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">{{ rec.animal.name|default:"Безымянный" }}</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge bg-info">{{ rec.animal.get_species_display }}</span>
+                    <span class="badge bg-secondary">{{ rec.animal.get_size_category_display }}</span>
+                    <span class="badge bg-success">{{ rec.animal.age }} лет</span>
+                </div>
+
+                <div class="progress mb-3" style="height: 20px;">
+                    <div class="progress-bar bg-success"
+                         style="width: {{ rec.compatibility }}%">
+                        {{ rec.compatibility }}% совместимость
+                    </div>
+                </div>
+
+                <p class="mb-2"><i class="bi bi-house"></i> {{ rec.animal.shelter.name }}</p>
+                <p class="mb-2"><i class="bi bi-emoji-smile"></i> Дружелюбие: {{ rec.animal.child_friendly }}/10</p>
+                <p class="mb-3"><i class="bi bi-lightning"></i> Активность: {{ rec.animal.activity_level }}/10</p>
+
+                <div class="d-grid gap-2">
+                    <a href="{% url 'animal_detail' rec.animal.pk %}" class="btn btn-primary">
+                        <i class="bi bi-eye"></i> Подробнее
+                    </a>
+                    <a href="{% url 'submit_adoption' rec.animal.id %}" class="btn btn-success">
+                        <i class="bi bi-heart"></i> Подать заявку
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="row">
+    <div class="col-12">
+        <div class="alert alert-warning">
+            <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Нет рекомендаций</h4>
+            <p>Заполните анкету для получения персональных рекомендаций.</p>
+            <a href="{% url 'edit_profile' %}" class="btn btn-primary">Заполнить анкету</a>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

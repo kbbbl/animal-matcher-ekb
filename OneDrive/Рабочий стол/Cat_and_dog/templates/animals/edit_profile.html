@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Мой профиль{% endblock %}
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2 class="mb-4"><i class="bi bi-person-circle"></i> Мой профиль</h2>
+        <p class="lead">Заполните анкету для персональных рекомендаций</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-clipboard-data"></i> Анкета</h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="row">
+                        {% for field in form %}
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">{{ field.label }}</label>
+                            {{ field }}
+                            {% if field.help_text %}
+                            <small class="form-text text-muted">{{ field.help_text }}</small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-save"></i> Сохранить
+                        </button>
+                        <a href="{% url 'animal_list' %}" class="btn btn-outline-secondary">
+                            Отмена
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow mb-3">
+            <div class="card-header bg-warning">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Зачем нужна анкета?</h6>
+            </div>
+            <div class="card-body">
+                <ul class="mb-0">
+                    <li>Персональные рекомендации</li>
+                    <li>Точный расчет совместимости</li>
+                    <li>Повышение шансов на усыновление</li>
+                </ul>
+            </div>
+        </div>
+
+        {% if user.profile.experience_years > 0 %}
+        <div class="card shadow">
+            <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="bi bi-award"></i> Ваш опыт</h6>
+            </div>
+            <div class="card-body">
+                <p class="mb-1">Опыт: <strong>{{ user.profile.experience_years }} лет</strong></p>
+                <p class="mb-0">Уровень: <strong>{{ user.profile.get_experience_level }}</strong></p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
