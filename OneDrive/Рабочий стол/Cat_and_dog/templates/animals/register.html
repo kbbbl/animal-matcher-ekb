@@ -16,18 +16,32 @@
 
                 <form method="post">
                     {% csrf_token %}
-                    {% for field in user_form %}
+
                     <div class="mb-3">
-                        <label class="form-label">{{ field.label }}</label>
-                        {{ field }}
-                        {% if field.errors %}
-                        <div class="text-danger small">{{ field.errors }}</div>
-                        {% endif %}
-                        {% if field.help_text %}
-                        <div class="form-text">{{ field.help_text }}</div>
-                        {% endif %}
+                        <label for="username" class="form-label">Имя пользователя *</label>
+                        <input type="text" id="username" name="username" class="form-control"
+                               placeholder="Придумайте логин" required>
+                        <small class="form-text text-muted">Только буквы, цифры и @/./+/-/_</small>
                     </div>
-                    {% endfor %}
+
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email *</label>
+                        <input type="email" id="email" name="email" class="form-control"
+                               placeholder="example@mail.ru" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password1" class="form-label">Пароль *</label>
+                        <input type="password" id="password1" name="password1" class="form-control"
+                               placeholder="Минимум 8 символов" required minlength="8">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password2" class="form-label">Подтверждение пароля *</label>
+                        <input type="password" id="password2" name="password2" class="form-control"
+                               placeholder="Повторите пароль" required minlength="8">
+                    </div>
+
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary">
                             <i class="bi bi-check-circle"></i> Зарегистрироваться

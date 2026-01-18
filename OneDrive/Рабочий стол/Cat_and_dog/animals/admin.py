@@ -2,10 +2,6 @@ from django.db import models
 from django.contrib import admin
 from .models import Shelter, Animal, AdoptionApplication, UserProfile
 
-admin.site.register(Shelter)
-admin.site.register(Animal)
-admin.site.register(AdoptionApplication)
-
 
 @admin.register(Shelter)
 class ShelterAdmin(admin.ModelAdmin):

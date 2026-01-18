@@ -1,10 +1,78 @@
 {% extends 'base.html' %}
 {% block title %}Персональные рекомендации{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recommendation-card {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .recommendation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        border-color: #4cc9f0;
+    }
+    .compatibility-meter {
+        height: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+    .compatibility-score {
+        font-size: 1.1rem;
+        font-weight: bold;
+        color: #198754;
+    }
+    .match-level {
+        display: inline-block;
+        padding: 3px 10px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        margin-left: 10px;
+    }
+    .match-excellent { background-color: #d1fae5; color: #065f46; }
+    .match-good { background-color: #fef3c7; color: #92400e; }
+    .match-average { background-color: #e0e7ff; color: #3730a3; }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h2 class="mb-4"><i class="bi bi-stars"></i> Персональные рекомендации</h2>
-        <p class="lead">Животные, наиболее подходящие вам по совместимости</p>
+        <h1 class="mb-3"><i class="bi bi-stars"></i> Персональные рекомендации</h1>
+        <p class="lead mb-4">Животные, наиболее подходящие вам по совместимости</p>
+
+        {% if profile %}
+        <div class="card mb-4 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0"><i class="bi bi-person-badge"></i> Ваш профиль</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Тип жилья:</strong> {{ profile.get_home_type_display }}</p>
+                        <p class="mb-2"><strong>Опыт содержания:</strong> {{ profile.experience_years }} лет ({{ profile.get_experience_level }})</p>
+                        <p class="mb-2"><strong>Дети:</strong> {% if profile.has_children %}Да{% else %}Нет{% endif %}</p>
+                        <p class="mb-2"><strong>Другие животные:</strong> {% if profile.has_other_pets %}Да{% else %}Нет{% endif %}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p class="mb-2"><strong>Важность дружелюбия к детям:</strong> {{ profile.pref_child_friendly }}/10</p>
+                        <p class="mb-2"><strong>Важность дружелюбия к животным:</strong> {{ profile.pref_pet_friendly }}/10</p>
+                        <p class="mb-2"><strong>Предпочитаемая активность:</strong> {{ profile.pref_activity_level }}/10</p>
+                        {% if profile.pref_size %}
+                        <p class="mb-0"><strong>Предпочитаемый размер:</strong> {{ profile.get_pref_size_display }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-pencil"></i> Изменить анкету
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 </div>
 
@@ -13,46 +81,40 @@
     <div class="col-12">
         <div class="card shadow">
             <div class="card-header bg-success text-white">
-                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика рекомендаций</h5>
+                <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика рекомендаций (работает Pandas!)</h5>
             </div>
             <div class="card-body">
                 <div class="row text-center">
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-3 col-6 mb-3">
                         <div class="stat-box">
                             <h3 class="text-primary">{{ stats.total }}</h3>
-                            <p class="text-muted">Всего</p>
+                            <p class="text-muted">Всего рекомендаций</p>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-3 col-6 mb-3">
                         <div class="stat-box">
                             <h3 class="text-primary">{{ stats.avg_compatibility }}%</h3>
                             <p class="text-muted">Средняя совместимость</p>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-3 col-6 mb-3">
                         <div class="stat-box">
                             <h3 class="text-primary">{{ stats.cats_count }}</h3>
                             <p class="text-muted">Кошек</p>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
+                    <div class="col-md-3 col-6 mb-3">
                         <div class="stat-box">
                             <h3 class="text-primary">{{ stats.dogs_count }}</h3>
                             <p class="text-muted">Собак</p>
                         </div>
                     </div>
-                    <div class="col-md-2 mb-3">
-                        <div class="stat-box">
-                            <h3 class="text-primary">{{ stats.max_compatibility }}%</h3>
-                            <p class="text-muted">Максимум</p>
-                        </div>
-                    </div>
-                    <div class="col-md-2 mb-3">
-                        <div class="stat-box">
-                            <h3 class="text-primary">{{ stats.min_compatibility }}%</h3>
-                            <p class="text-muted">Минимум</p>
-                        </div>
-                    </div>
+                </div>
+                <div class="text-center mt-2">
+                    <p class="text-muted mb-0">
+                        <i class="bi bi-info-circle"></i>
+                        Лучшая рекомендация: <strong class="text-success">{{ stats.top_compatibility }}%</strong>
+                    </p>
                 </div>
             </div>
         </div>
@@ -64,7 +126,7 @@
     <div class="col-12">
         <div class="card shadow">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> График совместимости</h5>
+                <h5 class="mb-0"><i class="bi bi-bar-chart"></i> График совместимости (работает Plotly!)</h5>
             </div>
             <div class="card-body">
                 {{ chart_html|safe }}
@@ -77,34 +139,106 @@
 <div class="row">
     {% for rec in recommendations %}
     <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card animal-card shadow h-100">
-            <div class="card-header bg-primary text-white">
+        <div class="card recommendation-card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center
+                {% if rec.compatibility >= 80 %}bg-success text-white
+                {% elif rec.compatibility >= 60 %}bg-info text-white
+                {% else %}bg-warning{% endif %}">
                 <h5 class="mb-0">{{ rec.animal.name|default:"Безымянный" }}</h5>
+                <span class="badge bg-light
+                    {% if rec.compatibility >= 80 %}text-success
+                    {% elif rec.compatibility >= 60 %}text-info
+                    {% else %}text-warning{% endif %}">
+                    {{ rec.compatibility }}%
+                </span>
             </div>
+
             <div class="card-body">
+                {% if rec.animal.photo %}
+                <img src="{{ rec.animal.photo.url }}" class="img-fluid rounded mb-3"
+                     alt="{{ rec.animal.name }}" style="height: 180px; width: 100%; object-fit: cover;">
+                {% else %}
+                <div class="bg-light rounded d-flex align-items-center justify-content-center mb-3"
+                     style="height: 180px;">
+                    <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                </div>
+                {% endif %}
+
                 <div class="mb-3">
-                    <span class="badge bg-info">{{ rec.animal.get_species_display }}</span>
+                    <span class="badge bg-primary">
+                        {% if rec.animal.species == 'dog' %}
+                            <i class="bi bi-emoji-dog"></i> Собака
+                        {% else %}
+                            <i class="bi bi-emoji-cat"></i> Кошка
+                        {% endif %}
+                    </span>
                     <span class="badge bg-secondary">{{ rec.animal.get_size_category_display }}</span>
                     <span class="badge bg-success">{{ rec.animal.age }} лет</span>
+                    {% if rec.animal.breed %}
+                    <span class="badge bg-info">{{ rec.animal.breed|truncatechars:15 }}</span>
+                    {% endif %}
                 </div>
 
-                <div class="progress mb-3" style="height: 20px;">
-                    <div class="progress-bar bg-success"
-                         style="width: {{ rec.compatibility }}%">
-                        {{ rec.compatibility }}% совместимость
+                <div class="mb-3">
+                    <p class="mb-1"><strong>Совместимость:</strong></p>
+                    <div class="compatibility-meter bg-light">
+                        <div class="progress-bar
+                            {% if rec.compatibility >= 80 %}bg-success
+                            {% elif rec.compatibility >= 60 %}bg-info
+                            {% else %}bg-warning{% endif %}"
+                            role="progressbar"
+                            style="width: {{ rec.compatibility }}%"
+                            aria-valuenow="{{ rec.compatibility }}"
+                            aria-valuemin="0"
+                            aria-valuemax="100">
+                        </div>
                     </div>
+                    <div class="d-flex justify-content-between mt-1">
+                        <small class="text-muted">0%</small>
+                        <span class="compatibility-score">{{ rec.compatibility }}%</span>
+                        <small class="text-muted">100%</small>
+                    </div>
+
+                    {% if rec.compatibility >= 80 %}
+                    <span class="match-level match-excellent">Отличное совпадение</span>
+                    {% elif rec.compatibility >= 60 %}
+                    <span class="match-level match-good">Хорошее совпадение</span>
+                    {% else %}
+                    <span class="match-level match-average">Среднее совпадение</span>
+                    {% endif %}
                 </div>
 
-                <p class="mb-2"><i class="bi bi-house"></i> {{ rec.animal.shelter.name }}</p>
-                <p class="mb-2"><i class="bi bi-emoji-smile"></i> Дружелюбие: {{ rec.animal.child_friendly }}/10</p>
-                <p class="mb-3"><i class="bi bi-lightning"></i> Активность: {{ rec.animal.activity_level }}/10</p>
+                <ul class="list-unstyled small mb-3">
+                    <li class="mb-1">
+                        <i class="bi bi-house"></i>
+                        <strong>Приют:</strong> {{ rec.animal.shelter.name }}
+                    </li>
+                    <li class="mb-1">
+                        <i class="bi bi-emoji-smile"></i>
+                        <strong>Дружелюбие к детям:</strong> {{ rec.animal.child_friendly }}/10
+                    </li>
+                    <li class="mb-1">
+                        <i class="bi bi-heart"></i>
+                        <strong>К животным:</strong> {{ rec.animal.other_pet_friendly }}/10
+                    </li>
+                    <li class="mb-1">
+                        <i class="bi bi-lightning"></i>
+                        <strong>Активность:</strong> {{ rec.animal.activity_level }}/10
+                    </li>
+                </ul>
+
+                {% if rec.animal.description %}
+                <p class="small text-muted mb-3">
+                    {{ rec.animal.description|truncatechars:100 }}
+                </p>
+                {% endif %}
 
                 <div class="d-grid gap-2">
                     <a href="{% url 'animal_detail' rec.animal.pk %}" class="btn btn-primary">
-                        <i class="bi bi-eye"></i> Подробнее
+                        <i class="bi bi-eye"></i> Подробнее о животном
                     </a>
                     <a href="{% url 'submit_adoption' rec.animal.id %}" class="btn btn-success">
-                        <i class="bi bi-heart"></i> Подать заявку
+                        <i class="bi bi-heart-fill"></i> Подать заявку
                     </a>
                 </div>
             </div>
@@ -112,13 +246,38 @@
     </div>
     {% endfor %}
 </div>
+
+<div class="row mt-4">
+    <div class="col-12 text-center">
+        <p class="text-muted">
+            Показано {{ recommendations|length }} из {{ stats.total }} рекомендаций
+        </p>
+        <a href="{% url 'animal_list' %}" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left"></i> Вернуться к полному каталогу
+        </a>
+    </div>
+</div>
+
 {% else %}
 <div class="row">
     <div class="col-12">
-        <div class="alert alert-warning">
-            <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Нет рекомендаций</h4>
-            <p>Заполните анкету для получения персональных рекомендаций.</p>
-            <a href="{% url 'edit_profile' %}" class="btn btn-primary">Заполнить анкету</a>
+        <div class="card shadow">
+            <div class="card-header bg-warning">
+                <h5 class="mb-0"><i class="bi bi-exclamation-triangle"></i> Нет рекомендаций</h5>
+            </div>
+            <div class="card-body text-center py-5">
+                <i class="bi bi-emoji-frown" style="font-size: 4rem; color: #6c757d;"></i>
+                <h4 class="mt-3">Рекомендации не найдены</h4>
+                <p class="lead mb-4">Заполните анкету или измените параметры поиска</p>
+                <div class="d-flex justify-content-center gap-3">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-primary">
+                        <i class="bi bi-pencil"></i> Заполнить анкету
+                    </a>
+                    <a href="{% url 'animal_list' %}" class="btn btn-outline-primary">
+                        <i class="bi bi-list-ul"></i> Посмотреть всех животных
+                    </a>
+                </div>
+            </div>
         </div>
     </div>
 </div>

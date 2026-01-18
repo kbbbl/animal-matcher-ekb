@@ -7,19 +7,41 @@
     .animal-card {
         transition: transform 0.2s;
         height: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
     }
     .animal-card:hover {
         transform: translateY(-5px);
         box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        border-color: #4361ee;
     }
     .filter-card {
         background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
         color: white;
         border: none;
+        border-radius: 10px;
     }
     .stat-badge {
         font-size: 0.9em;
         margin-right: 5px;
+    }
+    .stat-box {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 15px;
+        text-align: center;
+        background: white;
+        transition: transform 0.3s;
+    }
+    .stat-box:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .compatibility-badge {
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        margin-left: 5px;
     }
 </style>
 {% endblock %}
@@ -27,7 +49,7 @@
 {% block content %}
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="display-5">Найдите своего идеального питомца</h1>
+            <h1 class="display-5 fw-bold">Найдите своего идеального питомца</h1>
             <p class="lead">Подбор животных из приютов Екатеринбурга с учетом совместимости</p>
         </div>
     </div>
@@ -83,37 +105,105 @@
         </div>
     </div>
 
+    {% if user.is_authenticated %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-success">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="bi bi-stars"></i> Ваши персональные рекомендации</h5>
+                    <span class="badge bg-light text-success">
+                        {% if user.profile %}
+                            Анкета заполнена
+                        {% else %}
+                            Заполните анкету
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">На основе вашей анкеты мы подобрали животных с наибольшей совместимостью.</p>
+                    <div class="d-flex gap-2">
+                        <a href="{% url 'personal_recommendations' %}" class="btn btn-success">
+                            <i class="bi bi-star-fill"></i> Посмотреть рекомендации
+                        </a>
+                        {% if not user.profile.phone %}
+                        <a href="{% url 'edit_profile' %}" class="btn btn-outline-success">
+                            <i class="bi bi-pencil"></i> Заполнить анкету
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-person-plus"></i> Получите персональные рекомендации</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">Зарегистрируйтесь и заполните анкету, чтобы получать рекомендации животных с высокой совместимостью!</p>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{% url 'register' %}" class="btn btn-primary">
+                            <i class="bi bi-person-plus"></i> Зарегистрироваться
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary">
+                            <i class="bi bi-box-arrow-in-right"></i> Войти
+                        </a>
+                        <a href="{% url 'animal_list' %}" class="btn btn-link text-primary">
+                            Продолжить как гость
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% if stats %}
     <div class="row mb-4">
         <div class="col-12">
             <div class="card">
                 <div class="card-header bg-info text-white">
-                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика (работает Pandas!)</h5>
+                    <h5 class="mb-0"><i class="bi bi-graph-up"></i> Статистика животных (работает Pandas!)</h5>
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 col-6 mb-3">
                             <div class="stat-box">
                                 <h3 class="text-primary">{{ stats.total_count }}</h3>
                                 <p class="text-muted mb-0">Всего животных</p>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 col-6 mb-3">
                             <div class="stat-box">
                                 <h3 class="text-primary">{{ stats.cats_count }}</h3>
                                 <p class="text-muted mb-0">Кошек</p>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 col-6 mb-3">
                             <div class="stat-box">
                                 <h3 class="text-primary">{{ stats.dogs_count }}</h3>
                                 <p class="text-muted mb-0">Собак</p>
                             </div>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-md-2 col-6 mb-3">
                             <div class="stat-box">
                                 <h3 class="text-primary">{{ stats.avg_child_friendly }}/10</h3>
                                 <p class="text-muted mb-0">Ср. дружелюбие</p>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ stats.avg_activity }}/10</h3>
+                                <p class="text-muted mb-0">Ср. активность</p>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-6 mb-3">
+                            <div class="stat-box">
+                                <h3 class="text-primary">{{ stats.avg_age }}</h3>
+                                <p class="text-muted mb-0">Ср. возраст</p>
                             </div>
                         </div>
                     </div>
@@ -139,32 +229,67 @@
                     <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
                          style="height: 200px;">
                         <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                        <span class="visually-hidden">Фото отсутствует</span>
                     </div>
                     {% endif %}
 
                     <div class="card-body">
-                        <h5 class="card-title">{{ animal.name|default:"Безымянный" }}</h5>
+                        <h5 class="card-title d-flex justify-content-between align-items-start">
+                            {{ animal.name|default:"Безымянный" }}
+                            {% if user.is_authenticated and user.profile %}
+                                {% with compatibility=user.profile.calculate_compatibility_with_animal|default:0 %}
+                                <span class="badge bg-success compatibility-badge">
+                                    {{ compatibility }}%
+                                </span>
+                                {% endwith %}
+                            {% endif %}
+                        </h5>
 
                         <div class="mb-2">
                             <span class="badge bg-primary stat-badge">
-                                {{ animal.get_species_display }}
+                                {% if animal.species == 'dog' %}
+                                    <i class="bi bi-emoji-dog"></i> Собака
+                                {% else %}
+                                    <i class="bi bi-emoji-cat"></i> Кошка
+                                {% endif %}
                             </span>
                             <span class="badge bg-secondary stat-badge">
                                 {{ animal.get_size_category_display }}
                             </span>
                             <span class="badge bg-success stat-badge">{{ animal.age }} лет</span>
+                            {% if animal.breed %}
+                            <span class="badge bg-info stat-badge">{{ animal.breed|truncatechars:15 }}</span>
+                            {% endif %}
                         </div>
 
                         <ul class="list-unstyled small mb-3">
-                            <li><i class="bi bi-house"></i> Приют: {{ animal.shelter.name }}</li>
-                            <li><i class="bi bi-emoji-smile"></i> Дружелюбие к детям: {{ animal.child_friendly }}/10</li>
-                            <li><i class="bi bi-lightning"></i> Активность: {{ animal.activity_level }}/10</li>
+                            <li class="mb-1">
+                                <i class="bi bi-house"></i>
+                                <strong>Приют:</strong> {{ animal.shelter.name|truncatechars:20 }}
+                            </li>
+                            <li class="mb-1">
+                                <i class="bi bi-emoji-smile"></i>
+                                <strong>Дружелюбие к детям:</strong> {{ animal.child_friendly }}/10
+                            </li>
+                            <li class="mb-1">
+                                <i class="bi bi-heart"></i>
+                                <strong>К животным:</strong> {{ animal.other_pet_friendly }}/10
+                            </li>
+                            <li class="mb-3">
+                                <i class="bi bi-lightning"></i>
+                                <strong>Активность:</strong> {{ animal.activity_level }}/10
+                            </li>
                         </ul>
 
                         <div class="d-grid gap-2">
                             <a href="{% url 'animal_detail' animal.pk %}" class="btn btn-primary">
                                 <i class="bi bi-eye"></i> Подробнее
                             </a>
+                            {% if user.is_authenticated %}
+                            <a href="{% url 'submit_adoption' animal.id %}" class="btn btn-outline-success">
+                                <i class="bi bi-heart"></i> Заявка на усыновление
+                            </a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -174,7 +299,10 @@
             <div class="col-12">
                 <div class="alert alert-warning">
                     <h4 class="alert-heading"><i class="bi bi-exclamation-triangle"></i> Животные не найдены</h4>
-                    <p>Попробуйте изменить параметры фильтрации.</p>
+                    <p>Попробуйте изменить параметры фильтрации или <a href="{% url 'animal_list' %}">сбросить фильтры</a>.</p>
+                    {% if not user.is_authenticated %}
+                    <p class="mb-0">Или <a href="{% url 'register' %}">зарегистрируйтесь</a> для получения персональных рекомендаций.</p>
+                    {% endif %}
                 </div>
             </div>
         {% endif %}
@@ -207,4 +335,28 @@
         </ul>
     </nav>
     {% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Подсветка активных фильтров
+    const filterForm = document.querySelector('form[method="get"]');
+    if (filterForm) {
+        const inputs = filterForm.querySelectorAll('select, input[type="text"]');
+        inputs.forEach(input => {
+            if (input.value) {
+                input.classList.add('border-primary', 'border-2');
+            }
+        });
+    }
+
+    const animalCards = document.querySelectorAll('.animal-card');
+    animalCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transition = 'all 0.3s ease';
+        });
+    });
+});
+</script>
 {% endblock %}

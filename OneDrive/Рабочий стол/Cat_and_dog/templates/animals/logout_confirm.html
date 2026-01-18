@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Выход из системы{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header bg-warning">
+                <h4 class="mb-0"><i class="bi bi-box-arrow-right"></i> Подтверждение выхода</h4>
+            </div>
+            <div class="card-body text-center">
+                <p class="lead mb-4">Вы уверены, что хотите выйти из системы?</p>
+
+                <form method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="bi bi-box-arrow-right"></i> Да, выйти
+                        </button>
+                        <a href="{% url 'animal_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Отмена, вернуться на главную
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
