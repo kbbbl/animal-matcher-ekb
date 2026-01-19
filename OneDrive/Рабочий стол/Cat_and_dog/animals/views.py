@@ -243,12 +243,6 @@ def register(request):
         password1 = request.POST.get('password1', '').strip()
         password2 = request.POST.get('password2', '').strip()
 
-        print(f"DEBUG register - username: {username}")
-        print(f"DEBUG register - email: {email}")
-        print(f"DEBUG register - password1: {password1}")
-        print(f"DEBUG register - password2: {password2}")
-        print(f"DEBUG register - POST data: {dict(request.POST)}")
-
         if not password1:
             messages.error(request, 'Введите пароль')
             return render(request, 'animals/register.html')
