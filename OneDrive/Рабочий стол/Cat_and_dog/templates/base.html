@@ -52,7 +52,6 @@
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <!-- ИСПРАВЛЕНО: форма для logout вместо ссылки -->
                                 <form method="post" action="{% url 'logout' %}" class="d-inline">
                                     {% csrf_token %}
                                     <button type="submit" class="dropdown-item text-danger">
